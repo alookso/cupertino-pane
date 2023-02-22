@@ -1,5 +1,5 @@
 /**
- * Cupertino Pane 1.3.13
+ * Cupertino Pane 1.3.2
  * New generation interfaces for web3 progressive applications
  * https://github.com/roman-rr/cupertino-pane/
  *
@@ -7,7 +7,7 @@
  *
  * Released under the MIT License
  *
- * Released on: February 2, 2023
+ * Released on: February 22, 2023
  */
 
 (function (global, factory) {
@@ -808,7 +808,7 @@
                 'textarea', 'button', 'label'
             ];
             if ((el && el.tagName
-                 && formElements.includes(el.tagName.toLowerCase())) ||
+                && formElements.includes(el.tagName.toLowerCase())) ||
                 el.getAttribute('contenteditable') === 'true') {
                 return true;
             }
