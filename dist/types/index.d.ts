@@ -11,6 +11,7 @@ interface PaneBreaks {
 interface ZStackSettings {
     pushElements: string[];
     minPushHeight?: number;
+    cardBorderRadius: number;
     cardYOffset?: number;
     cardZScale?: number;
     cardContrast?: number;
@@ -38,7 +39,7 @@ interface PaneSettings {
     horizontal: boolean;
     horizontalOffset: number;
     inverse: boolean;
-    parentElement: any;
+    parentElement: string | HTMLElement;
     followerElement: string;
     cssClass: string;
     fitHeight: boolean;
@@ -73,7 +74,7 @@ interface PaneSettings {
     events: CupertinoEvents;
     modules: any[];
 }
-declare type CupertinoSettings = Partial<PaneSettings>;
+type CupertinoSettings = Partial<PaneSettings>;
 
 declare class Device {
     ios: boolean;
@@ -249,6 +250,13 @@ declare class Events {
     private handleTopperLowerPositions;
     private getEventClientYX;
     scrollPreventDrag(t: any): boolean;
+    /**
+     * Fix OSK
+     * https://developer.chrome.com/blog/viewport-resize-behavior/
+     * Chrome 108+ will adjust with content-overlays
+     * When everyones updates, can be replaced with adding content-overlays to meta
+     */
+    private fixAndroidResize;
     willScrolled(): boolean;
     private isPaneDescendant;
     private isFormElement;
@@ -270,6 +278,7 @@ declare class CupertinoPane {
     el: HTMLElement;
     contentEl: HTMLElement;
     parentEl: HTMLElement;
+    private styleEl;
     private draggableEl;
     private moveEl;
     private destroyButtonEl;

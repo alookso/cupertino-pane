@@ -1,13 +1,13 @@
 /**
- * Cupertino Pane 1.3.12
+ * Cupertino Pane 1.3.2
  * New generation interfaces for web3 progressive applications
  * https://github.com/roman-rr/cupertino-pane/
  *
- * Copyright 2019-2022 Roman Antonov (roman-rr)
+ * Copyright 2019-2023 Roman Antonov (roman-rr)
  *
  * Released under the MIT License
  *
- * Released on: September 11, 2022
+ * Released on: February 22, 2023
  */
 
 /******************************************************************************
@@ -592,6 +592,10 @@ class Events {
             if (!this.isOnViewport()) {
                 return;
             }
+            if (this.device.android
+                && !this.device.cordova) {
+                this.fixAndroidResize(true);
+            }
             this.keyboardVisible = true;
             // calculate distances
             const currentHeight = this.settings.breaks[this.breakpoints.prevBreakpoint].height;
@@ -628,6 +632,10 @@ class Events {
         // pane not visible on viewport
         if (!this.isOnViewport()) {
             return;
+        }
+        if (this.device.android
+            && !this.device.cordova) {
+            this.fixAndroidResize(false);
         }
         this.keyboardVisible = false;
         // Clear
@@ -747,6 +755,27 @@ class Events {
         }
         return prevention;
     }
+    /**
+     * Fix OSK
+     * https://developer.chrome.com/blog/viewport-resize-behavior/
+     * Chrome 108+ will adjust with content-overlays
+     * When everyones updates, can be replaced with adding content-overlays to meta
+     */
+    fixAndroidResize(showKeyboard) {
+        if (!this.instance.paneEl)
+            return;
+        const metaViewport = document.querySelector('meta[name=viewport]');
+        window.requestAnimationFrame(() => {
+            if (showKeyboard) {
+                document.documentElement.style.setProperty('overflow', 'hidden');
+                metaViewport.setAttribute('content', 'height=' + this.instance.screen_height + 'px, width=device-width, initial-scale=1.0');
+            }
+            else {
+                document.documentElement.style.setProperty('overflow', 'hidden');
+                metaViewport.setAttribute('content', 'viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
+        });
+    }
     willScrolled() {
         if (!(this.isElementScrollable(this.instance.overflowEl)
             && this.instance.overflowEl.style.overflow !== 'hidden')) {
@@ -772,8 +801,9 @@ class Events {
             'input', 'select', 'option',
             'textarea', 'button', 'label'
         ];
-        if (el && el.tagName
-            && formElements.includes(el.tagName.toLowerCase())) {
+        if ((el && el.tagName
+            && formElements.includes(el.tagName.toLowerCase())) ||
+            el.getAttribute('contenteditable') === 'true') {
             return true;
         }
         return false;
@@ -1107,6 +1137,7 @@ class ZStackModule {
         this.zStackDefaults = {
             pushElements: null,
             minPushHeight: null,
+            cardBorderRadius: null,
             cardYOffset: 0,
             cardZScale: 0.93,
             cardContrast: 0.85,
@@ -1158,6 +1189,7 @@ class ZStackModule {
     pushTransition(pushElement, newPaneY, transition) {
         let zStack = this.settings.zStack.pushElements;
         pushElement.style.transition = transition;
+        pushElement.style.overflow = this.settings.zStack.cardBorderRadius && 'hidden';
         newPaneY = this.instance.screenHeightOffset - newPaneY;
         const topHeight = this.settings.zStack.minPushHeight
             ? this.settings.zStack.minPushHeight : this.instance.screenHeightOffset - this.breakpoints.bottomer;
@@ -1204,7 +1236,7 @@ class ZStackModule {
                 val = min;
             return val;
         };
-        setStyles(getXbyY(scaleNew, scaleNormal), getXbyY(yNew, yNormal), getXbyY(contrastNew, contrastNormal), getXbyY(-10, 0) * -1);
+        setStyles(getXbyY(scaleNew, scaleNormal), getXbyY(yNew, yNormal), getXbyY(contrastNew, contrastNormal), getXbyY(this.settings.zStack.cardBorderRadius * -1, 0) * -1);
     }
     // Z-Stack: Pushed elements multiplicators
     setPushMultiplicators() {
@@ -1408,7 +1440,7 @@ class BackdropModule {
         this.backdropEl.style.transition = `all ${this.settings.animationDuration}ms ${this.settings.animationType} 0s`;
         this.backdropEl.style.backgroundColor = `rgba(0,0,0, ${this.settings.backdropOpacity})`;
         this.instance.wrapperEl.appendChild(this.backdropEl);
-        this.backdropEl.addEventListener('click', () => this.instance.emit('onBackdropTap'));
+        this.backdropEl.addEventListener('click', (event) => this.instance.emit('onBackdropTap', event));
     }
     isBackdropPresented() {
         return document.querySelector(`.cupertino-pane-wrapper .backdrop`)
@@ -1551,6 +1583,10 @@ class FitHeightModule {
             }
             // Set value for future checks
             this.contentElHeight = getHeight(this.instance.el);
+            // Fit to screen if fitScreenHeight happens
+            if (getHeight(this.instance.el) > this.instance.screen_height) {
+                this.contentElHeight = this.instance.screen_height;
+            }
             // Hide elements back
             if (!this.instance.rendered) {
                 this.instance.el.style.visibility = 'unset';
@@ -1865,12 +1901,14 @@ class CupertinoPane {
         this.el = this.selector;
         this.el.style.display = 'none';
         this.settings = Object.assign(Object.assign({}, this.settings), conf);
+        // Parent el as string or HTMLelement or get default element method
+        let parentElement = this.el.parentElement;
         if (this.settings.parentElement) {
-            this.settings.parentElement = document.querySelector(this.settings.parentElement);
+            parentElement = this.settings.parentElement instanceof HTMLElement
+                ? this.settings.parentElement
+                : document.querySelector(this.settings.parentElement);
         }
-        else {
-            this.settings.parentElement = this.el.parentElement;
-        }
+        this.settings.parentElement = parentElement;
         // Events listeners
         if (this.settings.events) {
             Object.keys(this.settings.events).forEach(name => this.on(name, this.settings.events[name]));
@@ -1885,6 +1923,9 @@ class CupertinoPane {
         modules.forEach((module) => this.modules[this.getModuleRef(module.name)] = new module(this));
     }
     drawBaseElements() {
+        // Style element on head
+        this.styleEl = document.createElement('style');
+        this.styleEl.id = `cupertino-pane-${(Math.random() + 1).toString(36).substring(7)}`;
         // Parent
         this.parentEl = this.settings.parentElement;
         // Wrapper
@@ -1997,7 +2038,8 @@ class CupertinoPane {
         this.contentEl.style.transition = `opacity ${this.settings.animationDuration}ms ${this.settings.animationType} 0s`;
         this.contentEl.style.overflowX = 'hidden';
         // Inject internal CSS
-        this.addStyle(internalStyles);
+        this.styleEl.textContent = internalStyles.replace(/\s\s+/g, ' ');
+        document.head.prepend(this.styleEl);
         // inject DOM
         this.parentEl.appendChild(this.wrapperEl);
         this.wrapperEl.appendChild(this.paneEl);
@@ -2155,17 +2197,7 @@ class CupertinoPane {
      * @param {string} styleString
      */
     addStyle(styleString) {
-        styleString = styleString.replace(/\s\s+/g, ' ');
-        if (!document.querySelector('#cupertino-panes-internal')) {
-            const style = document.createElement('style');
-            style.id = 'cupertino-panes-internal';
-            style.textContent = styleString;
-            document.head.prepend(style);
-        }
-        else {
-            const style = document.querySelector('#cupertino-panes-internal');
-            style.textContent += styleString;
-        }
+        this.styleEl.textContent += styleString.replace(/\s\s+/g, ' ');
     }
     ;
     getModuleRef(className) {
@@ -2322,6 +2354,7 @@ class CupertinoPane {
     destroyResets() {
         this.parentEl.appendChild(this.contentEl);
         this.wrapperEl.remove();
+        this.styleEl.remove();
         /****** Detach Events *******/
         this.events.detachAllEvents();
         // Reset vars
