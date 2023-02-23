@@ -494,10 +494,10 @@ export class Events {
       return;
     }
 
-    if (this.device.android 
-      && !this.device.cordova) {
-      this.fixAndroidResize(true);
-    }
+    // if (this.device.android
+    //   && !this.device.cordova) {
+    //   this.fixAndroidResize(true);
+    // }
 
     this.keyboardVisible = true;
 
@@ -547,10 +547,10 @@ export class Events {
       return;
     }
 
-    if (this.device.android 
-      && !this.device.cordova) {
-      this.fixAndroidResize(false);
-    }  
+    // if (this.device.android
+    //   && !this.device.cordova) {
+    //   this.fixAndroidResize(false);
+    // }
 
     this.keyboardVisible = false;
     
