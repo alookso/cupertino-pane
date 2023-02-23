@@ -711,10 +711,10 @@ export class Events {
       'textarea', 'button', 'label'
     ];
 
-    if (el && el.tagName 
-        && formElements.includes(el.tagName.toLowerCase())) {
-      return true;
-    }
+    if ((el && el.tagName
+            && formElements.includes(el.tagName.toLowerCase())) ||
+        el.getAttribute('contenteditable') === 'true'
+    ) {
     return false;
   }
 
