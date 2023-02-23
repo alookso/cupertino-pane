@@ -7,7 +7,7 @@
  *
  * Released under the MIT License
  *
- * Released on: February 22, 2023
+ * Released on: February 24, 2023
  */
 
 /******************************************************************************
@@ -592,10 +592,10 @@ class Events {
             if (!this.isOnViewport()) {
                 return;
             }
-            if (this.device.android
-                && !this.device.cordova) {
-                this.fixAndroidResize(true);
-            }
+            // if (this.device.android
+            //   && !this.device.cordova) {
+            //   this.fixAndroidResize(true);
+            // }
             this.keyboardVisible = true;
             // calculate distances
             const currentHeight = this.settings.breaks[this.breakpoints.prevBreakpoint].height;
@@ -633,10 +633,10 @@ class Events {
         if (!this.isOnViewport()) {
             return;
         }
-        if (this.device.android
-            && !this.device.cordova) {
-            this.fixAndroidResize(false);
-        }
+        // if (this.device.android
+        //   && !this.device.cordova) {
+        //   this.fixAndroidResize(false);
+        // }
         this.keyboardVisible = false;
         // Clear
         this.inputBottomOffset = 0;
