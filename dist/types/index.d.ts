@@ -73,7 +73,7 @@ interface PaneSettings {
     events: CupertinoEvents;
     modules: any[];
 }
-declare type CupertinoSettings = Partial<PaneSettings>;
+type CupertinoSettings = Partial<PaneSettings>;
 
 declare class Device {
     ios: boolean;

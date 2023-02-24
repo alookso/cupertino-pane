@@ -1,13 +1,13 @@
 /**
- * Cupertino Pane 1.3.01
+ * Cupertino Pane 1.3.12
  * New generation interfaces for web3 progressive applications
  * https://github.com/roman-rr/cupertino-pane/
  *
- * Copyright 2019-2022 Roman Antonov (roman-rr)
+ * Copyright 2019-2023 Roman Antonov (roman-rr)
  *
  * Released under the MIT License
  *
- * Released on: August 12, 2022
+ * Released on: February 24, 2023
  */
 
 (function (global, factory) {
@@ -778,8 +778,9 @@
                 'input', 'select', 'option',
                 'textarea', 'button', 'label'
             ];
-            if (el && el.tagName
-                && formElements.includes(el.tagName.toLowerCase())) {
+            if ((el && el.tagName
+                && formElements.includes(el.tagName.toLowerCase())) ||
+                el.getAttribute('contenteditable') === 'true') {
                 return true;
             }
             return false;
