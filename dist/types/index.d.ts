@@ -11,7 +11,6 @@ interface PaneBreaks {
 interface ZStackSettings {
     pushElements: string[];
     minPushHeight?: number;
-    cardBorderRadius: number;
     cardYOffset?: number;
     cardZScale?: number;
     cardContrast?: number;
@@ -39,7 +38,7 @@ interface PaneSettings {
     horizontal: boolean;
     horizontalOffset: number;
     inverse: boolean;
-    parentElement: string | HTMLElement;
+    parentElement: any;
     followerElement: string;
     cssClass: string;
     fitHeight: boolean;
@@ -74,7 +73,7 @@ interface PaneSettings {
     events: CupertinoEvents;
     modules: any[];
 }
-type CupertinoSettings = Partial<PaneSettings>;
+declare type CupertinoSettings = Partial<PaneSettings>;
 
 declare class Device {
     ios: boolean;
@@ -271,7 +270,6 @@ declare class CupertinoPane {
     el: HTMLElement;
     contentEl: HTMLElement;
     parentEl: HTMLElement;
-    private styleEl;
     private draggableEl;
     private moveEl;
     private destroyButtonEl;
@@ -288,7 +286,6 @@ declare class CupertinoPane {
     backdrop: (conf: {
         show: true;
     }) => void;
-    setZstackConfig: (zStack: any) => void;
     constructor(selector: (string | HTMLElement), conf?: CupertinoSettings);
     private drawBaseElements;
     present(conf?: {

@@ -11,7 +11,6 @@ export class ZStackModule {
   public zStackDefaults: ZStackSettings = {
     pushElements: null,
     minPushHeight: null,
-    cardBorderRadius: null,
     cardYOffset: 0,
     cardZScale: 0.93,
     cardContrast: 0.85,
@@ -27,11 +26,6 @@ export class ZStackModule {
     if (!this.settings.zStack) {
       return;
     }
-
-    // bind to primary instance
-    // TODO: change binding strategy according to TypeScript
-    // E.G. Using public module methods from modules
-    this.instance['setZstackConfig'] = async(zStack: ZStackSettings) => this.setZstackConfig(zStack);
 
     // Assign multiplicators for push elements
     this.instance.on('rendered', () => {
@@ -92,7 +86,6 @@ export class ZStackModule {
    public pushTransition(pushElement: HTMLElement, newPaneY: number, transition: string) {
     let zStack = this.settings.zStack.pushElements;
     pushElement.style.transition = transition;
-    pushElement.style.overflow = this.settings.zStack.cardBorderRadius && 'hidden';
     newPaneY = this.instance.screenHeightOffset - newPaneY;
     const topHeight = this.settings.zStack.minPushHeight 
       ? this.settings.zStack.minPushHeight : this.instance.screenHeightOffset - this.breakpoints.bottomer;
@@ -148,7 +141,7 @@ export class ZStackModule {
       getXbyY(scaleNew, scaleNormal),
       getXbyY(yNew, yNormal),
       getXbyY(contrastNew, contrastNormal), 
-      getXbyY(this.settings.zStack.cardBorderRadius * -1, 0) * -1,
+      getXbyY(-10, 0) * -1,
     );
   }
 

@@ -22,7 +22,6 @@ export class CupertinoPane {
   public el: HTMLElement;
   public contentEl: HTMLElement;
   public parentEl: HTMLElement;
-  private styleEl: HTMLStyleElement;
   private draggableEl: HTMLDivElement;
   private moveEl: HTMLDivElement;
   private destroyButtonEl: HTMLDivElement;
@@ -43,7 +42,6 @@ export class CupertinoPane {
   // should be moved under modules
   public calcFitHeight: (animated?: any) => Promise<any>;
   public backdrop: (conf: { show: true }) => void;
-  public setZstackConfig: (zStack: any) => void;
 
   constructor(private selector: (string | HTMLElement), 
               conf: CupertinoSettings = {}) {
@@ -69,17 +67,14 @@ export class CupertinoPane {
     this.el = this.selector;
     this.el.style.display = 'none';
     this.settings = {...this.settings, ...conf};
-
-
-    // Parent el as string or HTMLelement or get default element method
-    let parentElement = this.el.parentElement;
+    
     if (this.settings.parentElement) {
-        parentElement = this.settings.parentElement instanceof HTMLElement
-          ? this.settings.parentElement 
-          : <HTMLElement>document.querySelector(this.settings.parentElement);
+      this.settings.parentElement = <HTMLElement>document.querySelector(
+        this.settings.parentElement
+      );
+    } else {
+      this.settings.parentElement = this.el.parentElement;
     }
-    this.settings.parentElement = parentElement;
-
 
     // Events listeners
     if (this.settings.events) {
@@ -100,12 +95,8 @@ export class CupertinoPane {
   }
 
   private drawBaseElements() {
-    // Style element on head
-    this.styleEl = document.createElement('style');
-    this.styleEl.id = `cupertino-pane-${(Math.random() + 1).toString(36).substring(7)}`;
-
     // Parent
-    this.parentEl = <HTMLElement>this.settings.parentElement;
+    this.parentEl = this.settings.parentElement;
     
     // Wrapper
     this.wrapperEl = document.createElement('div');
@@ -223,8 +214,7 @@ export class CupertinoPane {
     this.contentEl.style.overflowX = 'hidden';
     
     // Inject internal CSS
-    this.styleEl.textContent = internalStyles.replace(/\s\s+/g, ' ');
-    document.head.prepend(this.styleEl);
+    this.addStyle(internalStyles);
     
     // inject DOM
     this.parentEl.appendChild(this.wrapperEl);
@@ -455,7 +445,16 @@ export class CupertinoPane {
    * @param {string} styleString
    */
   public addStyle(styleString): void {
-    this.styleEl.textContent += styleString.replace(/\s\s+/g, ' ');
+    styleString = styleString.replace(/\s\s+/g, ' ');
+    if (!document.querySelector('#cupertino-panes-internal')) {
+      const style = document.createElement('style');
+      style.id = 'cupertino-panes-internal';
+      style.textContent = styleString;
+      document.head.prepend(style);
+    } else {
+      const style = document.querySelector('#cupertino-panes-internal');
+      style.textContent += styleString;
+    }
   };
 
   private getModuleRef(className): string {
@@ -633,7 +632,6 @@ export class CupertinoPane {
   public destroyResets(): void {
     this.parentEl.appendChild(this.contentEl);
     this.wrapperEl.remove();
-    this.styleEl.remove();
     
     /****** Detach Events *******/
     this.events.detachAllEvents();

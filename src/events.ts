@@ -13,34 +13,34 @@ import { Transitions } from './transitions';
 export class Events {
 
   public touchEvents: {
-    start: string, move: string,
+    start: string, move: string, 
     end: string, cancel: string
   };
 
-  private allowClick = true;
-  private disableDragAngle = false;
-  private mouseDown = false;
-  public contentScrollTop = 0;
+  private allowClick: boolean = true;
+  private disableDragAngle: boolean = false;
+  private mouseDown: boolean = false;
+  public contentScrollTop: number = 0;
   private startY: number;
   private startX: number;
   private steps: {
-    posY: number,
-    posX?: number,
+    posY: number, 
+    posX?: number, 
     time: number
-  }[] = [];
-  public isScrolling = false;
+  }[] = [];  
+  public isScrolling: boolean = false;
   public startPointOverTop: number;
   public swipeNextSensivity: number;
 
   // Keyboard help vars
-  private keyboardVisible = false;
-  private inputBluredbyMove = false;
-  private inputBottomOffset = 0;
-  private previousInputBottomOffset = 0;
-  private prevNewHeight = 0;
+  private keyboardVisible: boolean = false;
+  private inputBluredbyMove: boolean = false;
+  private inputBottomOffset: number = 0;
+  private previousInputBottomOffset: number = 0;
+  private prevNewHeight: number = 0;
   private prevFocusedElement: Element;
-
-  constructor(private instance: CupertinoPane,
+  
+  constructor(private instance: CupertinoPane, 
               private settings: CupertinoSettings,
               private device: Device,
               private breakpoints: Breakpoints,
@@ -48,16 +48,16 @@ export class Events {
     this.touchEvents = this.getTouchEvents();
 
     // Set sensivity lower for web
-    this.swipeNextSensivity = window.hasOwnProperty('cordova')
-        ? (this.settings.fastSwipeSensivity + 2) : this.settings.fastSwipeSensivity;
+    this.swipeNextSensivity = window.hasOwnProperty('cordova') 
+      ? (this.settings.fastSwipeSensivity + 2) : this.settings.fastSwipeSensivity;
   }
-
+  
   private getTouchEvents(): {
-    start: string, move: string,
+    start: string, move: string, 
     end: string, cancel: string
   } {
     const touch = ['touchstart', 'touchmove', 'touchend', 'touchcancel'];
-    const desktop = ['mousedown', 'mousemove', 'mouseup', 'mouseleave'];
+    let desktop = ['mousedown', 'mousemove', 'mouseup', 'mouseleave'];
     const touchEventsTouch = {
       start: touch[0], move: touch[1],
       end: touch[2], cancel: touch[3]
@@ -75,7 +75,7 @@ export class Events {
     } else {
       this.settings.dragBy.forEach((selector) => {
         const el = document.querySelector(selector);
-        if (el) { this.eventListeners('addEventListener', el); }
+        if (el) this.eventListeners('addEventListener', el);
       });
     }
 
@@ -92,7 +92,7 @@ export class Events {
 
     // Fix Ionic-Android issue with ion-page scroll on keyboard
     if (this.device.ionic && this.device.android) {
-      const ionPages = document.querySelectorAll('.ion-page');
+      let ionPages = document.querySelectorAll('.ion-page');
       ionPages.forEach((el: any) => {
         el.addEventListener('scroll', (e) => {
           if (el.scrollTop) {
@@ -112,7 +112,7 @@ export class Events {
     } else {
       this.settings.dragBy.forEach((selector) => {
         const el = document.querySelector(selector);
-        if (el) { this.eventListeners('removeEventListener', el); }
+        if (el) this.eventListeners('removeEventListener', el);
       });
     }
 
@@ -138,8 +138,8 @@ export class Events {
 
   /**
    * Core DOM elements event listeners
-   * @param type
-   * @param el
+   * @param type 
+   * @param el 
    */
   private eventListeners(type: 'addEventListener' | 'removeEventListener', el: Element) {
     if (Support.touch) {
@@ -147,7 +147,7 @@ export class Events {
       el[type](this.touchEvents.start, this.touchStartCb, passiveListener);
       el[type](this.touchEvents.move, this.touchMoveCb, Support.passiveListener ? { passive: false, capture: false } : false);
       el[type](this.touchEvents.end, this.touchEndCb, passiveListener);
-      el[type](this.touchEvents.cancel, this.touchEndCb, passiveListener);
+      el[type](this.touchEvents.cancel, this.touchEndCb, passiveListener);        
     } else {
       el[type](this.touchEvents.start, this.touchStartCb, false);
       el[type](this.touchEvents.move, this.touchMoveCb, false);
@@ -160,10 +160,10 @@ export class Events {
       el[type]('click', this.onClickCb, true);
     }
   }
-
+  
   /**
    * Touch Start Event
-   * @param t
+   * @param t 
    */
   public touchStartCb = (t) => this.touchStart(t);
   private touchStart(t) {
@@ -173,7 +173,7 @@ export class Events {
     // Allow clicks by default -> disallow on move (allow click with disabled drag)
     this.allowClick = true;
 
-    if (this.instance.disableDragEvents) { return; }
+    if (this.instance.disableDragEvents) return;
 
     // Allow touch angle by default, disallow no move with condition
     this.disableDragAngle = false;
@@ -188,29 +188,29 @@ export class Events {
     this.startY = clientY;
     this.startX = clientX;
 
-    if (t.type === 'mousedown') { this.mouseDown = true; }
+    if (t.type === 'mousedown') this.mouseDown = true;
 
     // if overflow content was scrolled
     // increase to scrolled value
     if (this.contentScrollTop && this.willScrolled()) {
-      this.startY += this.contentScrollTop;
+      this.startY += this.contentScrollTop;  
     }
-
+    
     this.steps.push({posY: this.startY, posX: this.startX, time: Date.now()});
   }
 
-  /**
+  /** 
    * Touch Move Event
-   * @param t
+   * @param t 
    */
   public touchMoveCb = (t) => this.touchMove(t);
   private touchMove(t) {
     const { clientY, clientX, velocityY } = this.getEventClientYX(t, 'touchmove');
 
     // Deskop: check that touchStart() was initiated
-    if (t.type === 'mousemove' && !this.mouseDown) { return; }
+    if(t.type === 'mousemove' && !this.mouseDown) return;
 
-    // sometimes touchstart is not called
+    // sometimes touchstart is not called 
     // when touchmove is began before initialization
     if (!this.steps.length) {
       this.steps.push({posY: clientY, posX: clientX, time: Date.now()});
@@ -221,19 +221,19 @@ export class Events {
 
     // Disallow accidentaly clicks while slide gestures
     this.allowClick = false;
-
+    
     // textarea scrollbar
-    if (this.isFormElement(t.target)
+    if (this.isFormElement(t.target) 
         && this.isElementScrollable(t.target)) {
       return;
     }
-
+ 
     if (this.instance.disableDragEvents) {
       this.steps = [];
       return;
     }
-    if (this.disableDragAngle) { return; }
-    if (this.instance.preventedDismiss) { return; }
+    if (this.disableDragAngle) return;
+    if (this.instance.preventedDismiss) return;
 
     if (this.settings.touchMoveStopPropagation) {
       t.stopPropagation();
@@ -244,7 +244,7 @@ export class Events {
     const diffX = clientX - this.steps[this.steps.length - 1].posX;
 
     // No Y/X changes
-    if (!Math.abs(diffY)
+    if (!Math.abs(diffY) 
         && !Math.abs(diffX)) {
       return;
     }
@@ -252,24 +252,24 @@ export class Events {
     // Emit event
     this.instance.emit('onDrag', t);
 
-    // Has changes in position
+    // Has changes in position 
     this.instance.setGrabCursor(true, true);
     let newVal = this.instance.getPanelTransformY() + diffY;
-    const newValX = this.instance.getPanelTransformX() + diffX;
-
+    let newValX = this.instance.getPanelTransformX() + diffX;
+    
     // First event after touchmove only
     if (this.steps.length < 2) {
-      // Patch for 'touchmove' first event
+      // Patch for 'touchmove' first event 
       // when start slowly events with small velocity
       if (velocityY < 1) {
         newVal = this.instance.getPanelTransformY() + (diffY * velocityY);
       }
 
       // Move while transition patch next transitions
-      const computedTranslateY = new WebKitCSSMatrix(
-          window.getComputedStyle(this.instance.paneEl).transform
+      let computedTranslateY = new WebKitCSSMatrix(
+        window.getComputedStyle(this.instance.paneEl).transform
       ).m42;
-      const transitionYDiff = computedTranslateY - this.instance.getPanelTransformY();
+      let transitionYDiff = computedTranslateY - this.instance.getPanelTransformY();
       if (Math.abs(transitionYDiff)) {
         newVal += transitionYDiff;
       }
@@ -279,7 +279,7 @@ export class Events {
     // TODO: Check that blured from pane child instance
     if (this.steps.length > 2) {
       if (this.isFormElement(document.activeElement)
-          && !(this.isFormElement(t.target))) {
+      && !(this.isFormElement(t.target))) {
         (<any>document.activeElement).blur();
         this.inputBluredbyMove = true;
       }
@@ -288,13 +288,13 @@ export class Events {
     // Touch angle
     // Only for initial gesture with 1 touchstart step
     // Only not for scrolling events (scrolling already checked for angle)
-    if (this.settings.touchAngle
+    if (this.settings.touchAngle 
         && !this.isScrolling) {
       let touchAngle;
       const diffX = clientX - this.startX;
       const diffY = clientY - this.startY;
       touchAngle = (Math.atan2(Math.abs(diffY), Math.abs(diffX)) * 180) / Math.PI;
-      if (diffX * diffX + diffY * diffY >= 25
+      if (diffX * diffX + diffY * diffY >= 25 
           && (90 - touchAngle > this.settings.touchAngle)
           && this.steps.length === 1) {
         this.disableDragAngle = true;
@@ -304,15 +304,15 @@ export class Events {
 
     // Not allow move panel with positive overflow scroll
     // Scroll handler
-    if (this.instance.overflowEl.style.overflowY === 'auto'
-        && this.scrollPreventDrag(t)) {
+    if (this.instance.overflowEl.style.overflowY === 'auto' 
+      && this.scrollPreventDrag(t)) {
       return;
     }
 
     // Topper-top/Lower-bottom recognizers
-    const forceNewVal = this.handleTopperLowerPositions({
-      clientX, clientY,
-      newVal, diffY
+    let forceNewVal = this.handleTopperLowerPositions({
+        clientX, clientY, 
+        newVal, diffY
     });
 
     if (!isNaN(forceNewVal)) {
@@ -320,20 +320,20 @@ export class Events {
     }
 
     // No changes Y/X
-    if (this.instance.getPanelTransformY() === newVal
+    if (this.instance.getPanelTransformY() === newVal 
         && this.instance.getPanelTransformX() === newValX ) {
       return;
     }
 
     // Prevent Dismiss gesture
     if (!this.instance.preventedDismiss
-        && this.instance.preventDismissEvent && this.settings.bottomClose) {
-      const differKoef = ((-this.breakpoints.topper + this.breakpoints.topper - this.instance.getPanelTransformY()) / this.breakpoints.topper) / -8;
+          && this.instance.preventDismissEvent && this.settings.bottomClose) {
+      let differKoef = ((-this.breakpoints.topper + this.breakpoints.topper - this.instance.getPanelTransformY()) / this.breakpoints.topper) / -8;
       newVal = this.instance.getPanelTransformY() + (diffY * (0.5 - differKoef));
-
-      const mousePointY = (clientY - 220 - this.instance.screen_height) * -1;
+      
+      let mousePointY = (clientY - 220 - this.instance.screen_height) * -1;
       if (mousePointY <= this.instance.screen_height - this.breakpoints.bottomer) {
-        this.instance.preventedDismiss = true;
+        this.instance.preventedDismiss = true; 
         // Emit event with prevent dismiss
         this.instance.emit('onWillDismiss', {prevented: true} as any);
         this.instance.moveToBreak(this.breakpoints.prevBreakpoint);
@@ -349,15 +349,15 @@ export class Events {
 
   /**
    * Touch End Event
-   * @param t
+   * @param t 
    */
   public touchEndCb = (t) => this.touchEnd(t);
   private touchEnd(t) {
-    if (this.instance.disableDragEvents) { return; }
+    if (this.instance.disableDragEvents) return;
 
     // Desktop fixes
-    if (t.type === 'mouseleave' && !this.mouseDown) { return; }
-    if (t.type === 'mouseup' || t.type === 'mouseleave') { this.mouseDown = false; }
+    if (t.type === 'mouseleave' && !this.mouseDown) return;
+    if (t.type === 'mouseup' || t.type === 'mouseleave') this.mouseDown = false;
 
     // Determinate nearest point
     let closest = this.breakpoints.getClosestBreakY();
@@ -366,20 +366,20 @@ export class Events {
     let fastSwipeClose;
     if (this.fastSwipeNext('Y')) {
       closest = this.instance.swipeNextPoint(
-          this.steps[this.steps.length - 1]?.posY - this.steps[this.steps.length - 2]?.posY, // diff
-          this.swipeNextSensivity,
-          closest
+        this.steps[this.steps.length - 1]?.posY - this.steps[this.steps.length - 2]?.posY, //diff
+        this.swipeNextSensivity, 
+        closest
       );
       fastSwipeClose = this.settings.fastSwipeClose
-          && this.breakpoints.currentBreakpoint < closest;
+        && this.breakpoints.currentBreakpoint < closest;
     }
 
     // blur tap event
     let blurTapEvent = false;
     if ((this.isFormElement(document.activeElement))
-        && !(this.isFormElement(t.target))
-        && this.steps.length === 2) {
-      blurTapEvent = true;
+          && !(this.isFormElement(t.target))
+          && this.steps.length === 2) {
+        blurTapEvent = true;
     }
 
     // Event emitter
@@ -397,7 +397,7 @@ export class Events {
 
     // Fast swipe toward bottom - close
     if (fastSwipeClose) {
-      this.instance.destroy({animate: true});
+      this.instance.destroy({animate:true});
       return;
     }
 
@@ -406,12 +406,12 @@ export class Events {
     this.instance.setGrabCursor(true, false);
 
     // Bottom closable
-    if (this.settings.bottomClose
+    if (this.settings.bottomClose 
         && closest === this.breakpoints.breaks['bottom']) {
-      this.instance.destroy({animate: true});
+      this.instance.destroy({animate:true});
       return;
     }
-
+    
     // Simulationiusly emit event when touchend exact with next position (top)
     if (this.instance.getPanelTransformY() === closest) {
       this.instance.emit('onTransitionEnd', {target: this.instance.paneEl});
@@ -423,7 +423,7 @@ export class Events {
 
   /**
    * Click Event
-   * @param t
+   * @param t 
    */
   public onScrollCb = (t) => this.onScroll(t);
   private async onScroll(t) {
@@ -433,7 +433,7 @@ export class Events {
 
   /**
    * Click Event
-   * @param t
+   * @param t 
    */
   public onClickCb = (t) => this.onClick(t);
   private onClick(t) {
@@ -441,7 +441,7 @@ export class Events {
     if (!this.allowClick) {
       if (this.settings.preventClicks) {
         t.preventDefault();
-        t.stopPropagation();
+        t.stopPropagation();  
         t.stopImmediatePropagation();
       }
       return;
@@ -457,22 +457,22 @@ export class Events {
       });
       return;
     }
-
+    
     // Click to bottom - open middle
     if (this.settings.clickBottomOpen) {
       if (this.isFormElement(document.activeElement)) {
         return;
       }
-
+      
       if (this.breakpoints.breaks['bottom'] === this.instance.getPanelTransformY()) {
-        let closest;
-        if (this.settings.breaks['top'].enabled) {
-          closest = 'top';
-        }
-        if (this.settings.breaks['middle'].enabled) {
-          closest = 'middle';
-        }
-        this.instance.moveToBreak(closest);
+          let closest;
+          if (this.settings.breaks['top'].enabled) {
+            closest = 'top';
+          }
+          if (this.settings.breaks['middle'].enabled) {
+            closest = 'middle';
+          } 
+          this.instance.moveToBreak(closest);
       }
     }
   }
@@ -543,7 +543,7 @@ export class Events {
     }
 
     this.keyboardVisible = false;
-
+    
     // Clear
     this.inputBottomOffset = 0;
     this.previousInputBottomOffset = 0;
@@ -576,11 +576,11 @@ export class Events {
     // We should separate keyboard and resize events
     if (this.isKeyboardEvent()) {
       // Cordova & PWA iOS
-      if (this.device.cordova
+      if (this.device.cordova 
           || this.device.ios) {
         return;
       }
-
+      
       // PWA Android: we still handle keyboard with resize if input is active
       if (this.isFormElement(document.activeElement)) {
         this.onKeyboardShow({
@@ -616,7 +616,7 @@ export class Events {
       return true;
     }
 
-    if (!this.isFormElement(document.activeElement)
+    if (!this.isFormElement(document.activeElement) 
         && this.keyboardVisible) {
       this.keyboardVisible = false;
       return true;
@@ -630,12 +630,12 @@ export class Events {
    * Lower Than Bottom
    * Otherwise don't changes
    */
-  private handleTopperLowerPositions(coords: {
-    clientX: number, clientY: number,
-    newVal: number, diffY: number,
-  }): number {
+   private handleTopperLowerPositions(coords: {
+     clientX: number, clientY: number, 
+     newVal:number, diffY: number, 
+  }):number {
     // Disallow drag topper than top point
-    if (!this.settings.upperThanTop
+    if (!this.settings.upperThanTop 
         && (coords.newVal <= this.breakpoints.topper)) {
       return this.breakpoints.topper;
     }
@@ -643,9 +643,9 @@ export class Events {
     /**
      * Allow drag topper than top point
      */
-    if (this.settings.upperThanTop
-        && ((coords.newVal <= this.breakpoints.topper)
-            || this.startPointOverTop)) {
+    if (this.settings.upperThanTop 
+        && ((coords.newVal <= this.breakpoints.topper) 
+        || this.startPointOverTop)) {
       // check that finger reach same position before enable normal swipe mode
       if (!this.startPointOverTop) {
         this.startPointOverTop = coords.clientY;
@@ -654,7 +654,7 @@ export class Events {
         delete this.startPointOverTop;
       }
       const screenDelta = this.instance.screen_height - this.instance.screenHeightOffset;
-      const differKoef = (screenDelta - this.instance.getPanelTransformY()) / (screenDelta - this.breakpoints.topper) / 8;
+      const differKoef = (screenDelta - this.instance.getPanelTransformY()) / (screenDelta - this.breakpoints.topper) / 8;  
       return this.instance.getPanelTransformY() + (coords.diffY * differKoef);
     }
 
@@ -676,7 +676,7 @@ export class Events {
   }
 
   public scrollPreventDrag(t): boolean {
-    let prevention = false;
+    let prevention: boolean = false;
     if (this.contentScrollTop > 0) {
       prevention = true;
     }
@@ -697,17 +697,17 @@ export class Events {
     }
     let node = el.parentNode;
     while (node != null) {
-      if (node == this.instance.paneEl) {
-        return true;
-      }
-      node = node.parentNode;
+        if (node == this.instance.paneEl) {
+            return true;
+        }
+        node = node.parentNode;
     }
     return false;
   }
 
-  private isFormElement(el): boolean {
+  private isFormElement(el):boolean {
     const formElements: string[] = [
-      'input', 'select', 'option',
+      'input', 'select', 'option', 
       'textarea', 'button', 'label'
     ];
 
@@ -719,13 +719,13 @@ export class Events {
     }
   }
 
-  public isElementScrollable(el): boolean {
+  public isElementScrollable(el):boolean {
     return el.scrollHeight > el.clientHeight ? true : false;
   }
 
   private isOnViewport(): boolean {
-    if (this.instance.paneEl
-        && this.instance.paneEl.offsetWidth === 0
+    if (this.instance.paneEl 
+        && this.instance.paneEl.offsetWidth === 0 
         && this.instance.paneEl.offsetHeight === 0 ) {
       return false;
     }
