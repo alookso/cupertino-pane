@@ -239,7 +239,7 @@ class Events {
     }
     getTouchEvents() {
         const touch = ['touchstart', 'touchmove', 'touchend', 'touchcancel'];
-        let desktop = ['mousedown', 'mousemove', 'mouseup', 'mouseleave'];
+        const desktop = ['mousedown', 'mousemove', 'mouseup', 'mouseleave'];
         const touchEventsTouch = {
             start: touch[0], move: touch[1],
             end: touch[2], cancel: touch[3]
@@ -257,8 +257,9 @@ class Events {
         else {
             this.settings.dragBy.forEach((selector) => {
                 const el = document.querySelector(selector);
-                if (el)
+                if (el) {
                     this.eventListeners('addEventListener', el);
+                }
             });
         }
         // scroll events for overflowEl
@@ -272,7 +273,7 @@ class Events {
         }
         // Fix Ionic-Android issue with ion-page scroll on keyboard
         if (this.device.ionic && this.device.android) {
-            let ionPages = document.querySelectorAll('.ion-page');
+            const ionPages = document.querySelectorAll('.ion-page');
             ionPages.forEach((el) => {
                 el.addEventListener('scroll', (e) => {
                     if (el.scrollTop) {
@@ -291,8 +292,9 @@ class Events {
         else {
             this.settings.dragBy.forEach((selector) => {
                 const el = document.querySelector(selector);
-                if (el)
+                if (el) {
                     this.eventListeners('removeEventListener', el);
+                }
             });
         }
         // scroll events for overflowEl
@@ -340,8 +342,9 @@ class Events {
         this.instance.emit('onDragStart', t);
         // Allow clicks by default -> disallow on move (allow click with disabled drag)
         this.allowClick = true;
-        if (this.instance.disableDragEvents)
+        if (this.instance.disableDragEvents) {
             return;
+        }
         // Allow touch angle by default, disallow no move with condition
         this.disableDragAngle = false;
         // Not scrolling event by default -> on scroll will true
@@ -351,8 +354,9 @@ class Events {
         const { clientY, clientX } = this.getEventClientYX(t, 'touchstart');
         this.startY = clientY;
         this.startX = clientX;
-        if (t.type === 'mousedown')
+        if (t.type === 'mousedown') {
             this.mouseDown = true;
+        }
         // if overflow content was scrolled
         // increase to scrolled value
         if (this.contentScrollTop && this.willScrolled()) {
@@ -364,9 +368,10 @@ class Events {
         var _a;
         const { clientY, clientX, velocityY } = this.getEventClientYX(t, 'touchmove');
         // Deskop: check that touchStart() was initiated
-        if (t.type === 'mousemove' && !this.mouseDown)
+        if (t.type === 'mousemove' && !this.mouseDown) {
             return;
-        // sometimes touchstart is not called 
+        }
+        // sometimes touchstart is not called
         // when touchmove is began before initialization
         if (!this.steps.length) {
             this.steps.push({ posY: clientY, posX: clientX, time: Date.now() });
@@ -384,10 +389,12 @@ class Events {
             this.steps = [];
             return;
         }
-        if (this.disableDragAngle)
+        if (this.disableDragAngle) {
             return;
-        if (this.instance.preventedDismiss)
+        }
+        if (this.instance.preventedDismiss) {
             return;
+        }
         if (this.settings.touchMoveStopPropagation) {
             t.stopPropagation();
         }
@@ -401,20 +408,20 @@ class Events {
         }
         // Emit event
         this.instance.emit('onDrag', t);
-        // Has changes in position 
+        // Has changes in position
         this.instance.setGrabCursor(true, true);
         let newVal = this.instance.getPanelTransformY() + diffY;
-        let newValX = this.instance.getPanelTransformX() + diffX;
+        const newValX = this.instance.getPanelTransformX() + diffX;
         // First event after touchmove only
         if (this.steps.length < 2) {
-            // Patch for 'touchmove' first event 
+            // Patch for 'touchmove' first event
             // when start slowly events with small velocity
             if (velocityY < 1) {
                 newVal = this.instance.getPanelTransformY() + (diffY * velocityY);
             }
             // Move while transition patch next transitions
-            let computedTranslateY = new WebKitCSSMatrix(window.getComputedStyle(this.instance.paneEl).transform).m42;
-            let transitionYDiff = computedTranslateY - this.instance.getPanelTransformY();
+            const computedTranslateY = new WebKitCSSMatrix(window.getComputedStyle(this.instance.paneEl).transform).m42;
+            const transitionYDiff = computedTranslateY - this.instance.getPanelTransformY();
             if (Math.abs(transitionYDiff)) {
                 newVal += transitionYDiff;
             }
@@ -451,7 +458,7 @@ class Events {
             return;
         }
         // Topper-top/Lower-bottom recognizers
-        let forceNewVal = this.handleTopperLowerPositions({
+        const forceNewVal = this.handleTopperLowerPositions({
             clientX, clientY,
             newVal, diffY
         });
@@ -466,9 +473,9 @@ class Events {
         // Prevent Dismiss gesture
         if (!this.instance.preventedDismiss
             && this.instance.preventDismissEvent && this.settings.bottomClose) {
-            let differKoef = ((-this.breakpoints.topper + this.breakpoints.topper - this.instance.getPanelTransformY()) / this.breakpoints.topper) / -8;
+            const differKoef = ((-this.breakpoints.topper + this.breakpoints.topper - this.instance.getPanelTransformY()) / this.breakpoints.topper) / -8;
             newVal = this.instance.getPanelTransformY() + (diffY * (0.5 - differKoef));
-            let mousePointY = (clientY - 220 - this.instance.screen_height) * -1;
+            const mousePointY = (clientY - 220 - this.instance.screen_height) * -1;
             if (mousePointY <= this.instance.screen_height - this.breakpoints.bottomer) {
                 this.instance.preventedDismiss = true;
                 // Emit event with prevent dismiss
@@ -484,19 +491,22 @@ class Events {
     }
     touchEnd(t) {
         var _a, _b;
-        if (this.instance.disableDragEvents)
+        if (this.instance.disableDragEvents) {
             return;
+        }
         // Desktop fixes
-        if (t.type === 'mouseleave' && !this.mouseDown)
+        if (t.type === 'mouseleave' && !this.mouseDown) {
             return;
-        if (t.type === 'mouseup' || t.type === 'mouseleave')
+        }
+        if (t.type === 'mouseup' || t.type === 'mouseleave') {
             this.mouseDown = false;
+        }
         // Determinate nearest point
         let closest = this.breakpoints.getClosestBreakY();
         // Swipe - next (if differ > 10)
         let fastSwipeClose;
         if (this.fastSwipeNext('Y')) {
-            closest = this.instance.swipeNextPoint(((_a = this.steps[this.steps.length - 1]) === null || _a === void 0 ? void 0 : _a.posY) - ((_b = this.steps[this.steps.length - 2]) === null || _b === void 0 ? void 0 : _b.posY), //diff
+            closest = this.instance.swipeNextPoint(((_a = this.steps[this.steps.length - 1]) === null || _a === void 0 ? void 0 : _a.posY) - ((_b = this.steps[this.steps.length - 2]) === null || _b === void 0 ? void 0 : _b.posY), // diff
             this.swipeNextSensivity, closest);
             fastSwipeClose = this.settings.fastSwipeClose
                 && this.breakpoints.currentBreakpoint < closest;
@@ -592,10 +602,6 @@ class Events {
             if (!this.isOnViewport()) {
                 return;
             }
-            // if (this.device.android
-            //   && !this.device.cordova) {
-            //   this.fixAndroidResize(true);
-            // }
             this.keyboardVisible = true;
             // calculate distances
             const currentHeight = this.settings.breaks[this.breakpoints.prevBreakpoint].height;
@@ -633,10 +639,6 @@ class Events {
         if (!this.isOnViewport()) {
             return;
         }
-        // if (this.device.android
-        //   && !this.device.cordova) {
-        //   this.fixAndroidResize(false);
-        // }
         this.keyboardVisible = false;
         // Clear
         this.inputBottomOffset = 0;
@@ -755,27 +757,6 @@ class Events {
         }
         return prevention;
     }
-    /**
-     * Fix OSK
-     * https://developer.chrome.com/blog/viewport-resize-behavior/
-     * Chrome 108+ will adjust with content-overlays
-     * When everyones updates, can be replaced with adding content-overlays to meta
-     */
-    fixAndroidResize(showKeyboard) {
-        if (!this.instance.paneEl)
-            return;
-        const metaViewport = document.querySelector('meta[name=viewport]');
-        window.requestAnimationFrame(() => {
-            if (showKeyboard) {
-                document.documentElement.style.setProperty('overflow', 'hidden');
-                metaViewport.setAttribute('content', 'height=' + this.instance.screen_height + 'px, width=device-width, initial-scale=1.0');
-            }
-            else {
-                document.documentElement.style.setProperty('overflow', 'hidden');
-                metaViewport.setAttribute('content', 'viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no');
-            }
-        });
-    }
     willScrolled() {
         if (!(this.isElementScrollable(this.instance.overflowEl)
             && this.instance.overflowEl.style.overflow !== 'hidden')) {
@@ -804,9 +785,8 @@ class Events {
         if ((el && el.tagName
             && formElements.includes(el.tagName.toLowerCase())) ||
             el.getAttribute('contenteditable') === 'true') {
-            return true;
+            return false;
         }
-        return false;
     }
     isElementScrollable(el) {
         return el.scrollHeight > el.clientHeight ? true : false;
