@@ -715,8 +715,9 @@ export class Events {
             && formElements.includes(el.tagName.toLowerCase())) ||
         el.getAttribute('contenteditable') === 'true'
     ) {
-      return false;
+      return true;
     }
+    return false;
   }
 
   public isElementScrollable(el):boolean {
